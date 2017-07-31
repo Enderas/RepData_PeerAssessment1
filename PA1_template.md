@@ -1,23 +1,15 @@
----
-title: 'Reproductible Research : Week 2'
-author: "JULIA F"
-date: "22 juillet 2017"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproductible Research : Week 2
+JULIA F  
+22 juillet 2017  
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-library("dplyr")
-library("lattice")
-```
+
 
 ## Loading and preprocessing the data
 
 ###1. Code for reading in the dataset and/or processing the data
 
-```{r load_data}
+
+```r
 dfRaw <- read.csv(file.path("./activity.csv"), sep = ",", header = TRUE, na.strings = "NA")
 df <- subset.data.frame(dfRaw, steps != "NA")   # Remove lines with NA values. A bad thing for next questions ?
 ```
@@ -28,7 +20,8 @@ df <- subset.data.frame(dfRaw, steps != "NA")   # Remove lines with NA values. A
 
 ###1. Make a histogram of the total number of steps taken each day
 
-```{r steps_by_day}
+
+```r
 # Aggregate steps by day
 totalStepsByDay <- aggregate.data.frame(df$steps, by=list(dateMesure = df$date), FUN = "sum")
 totalStepsByDay <- rename(totalStepsByDay, totalSteps = x)
@@ -43,7 +36,11 @@ with(totalStepsByDay,
       col=rgb(0,0,1,0.5)
    )
 )
+```
 
+![](PA1_template_files/figure-html/steps_by_day-1.png)<!-- -->
+
+```r
 # Calculate the mean and median of the total number of steps taken per day
 meanTotalSteps   <- mean(totalStepsByDay$totalSteps)
 medianTotalSteps <- median(totalStepsByDay$totalSteps)
@@ -51,9 +48,9 @@ medianTotalSteps <- median(totalStepsByDay$totalSteps)
 
 ###2. Report the mean and median total number of steps taken per day
 
-The mean of total steps by day is `r meanTotalSteps`.
+The mean of total steps by day is 1.0766189\times 10^{4}.
 
-The median of total steps by day is `r medianTotalSteps`.
+The median of total steps by day is 10765.
 
 
 
@@ -61,7 +58,8 @@ The median of total steps by day is `r medianTotalSteps`.
 
 ###1. Calculate and report the mean of the number of steps by interval of the day
 
-```{r meanByInterval}
+
+```r
 meanStepsByInterval  <- aggregate.data.frame(df$steps, by=list(interval = df$interval), FUN = "mean")
 meanStepsByInterval  <- rename(meanStepsByInterval, meanSteps = x)
 
@@ -73,16 +71,19 @@ plot(
 )
 ```
 
+![](PA1_template_files/figure-html/meanByInterval-1.png)<!-- -->
+
 ###2. Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
 
-```{r maxMeanByInterval}
+
+```r
 maxMeanStepsByInterval <- max(meanStepsByInterval$meanSteps)
 orderedMeans <- arrange(meanStepsByInterval, desc(meanSteps))
 intervalWithMaxMean <- orderedMeans$interval[1]
 ```
-The maximum on average across all the days is `r maxMeanStepsByInterval` .
+The maximum on average across all the days is 206.1698113 .
 
-This maximum is get for the interval `r intervalWithMaxMean` .
+This maximum is get for the interval 835 .
 
 
 
@@ -91,11 +92,12 @@ This maximum is get for the interval `r intervalWithMaxMean` .
 ###1. Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with NAs)
 
 We need to reload data to recover NA lines
-```{r nbNA}
+
+```r
 df <- dfRaw
 nbNA <- sum(is.na.data.frame(df$steps))
 ```
-The number of NA values in the dataset is `r nbNA` .
+The number of NA values in the dataset is 2304 .
 
 ###2. Devise a strategy for filling in all of the missing values in the dataset. The strategy does not need to be sophisticated
 
@@ -103,7 +105,8 @@ The selected method is to take the mean of the missing interval across all the d
 
 ###3. Create a new dataset that is equal to the original dataset but with the missing data filled in
 
-```{r fillDataset}
+
+```r
 dfFilled <- df %>%
    inner_join(meanStepsByInterval, by = "interval") %>%  # Add a column with mean steps by interval across days
    mutate(filledSteps = if_else(is.na.data.frame(steps), as.integer(round(meanSteps)), steps) ) %>%
@@ -112,7 +115,8 @@ dfFilled <- df %>%
 
 ###4. Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
 
-```{r filled_histogram}
+
+```r
 # Aggregate steps by day
 totalStepsByDay <- aggregate.data.frame(dfFilled$steps, by=list(dateMesure = dfFilled$date), FUN = "sum")
 totalStepsByDay <- rename(totalStepsByDay, totalSteps = x)
@@ -127,15 +131,19 @@ with(totalStepsByDay,
       col=rgb(0,0,1,0.5)
    )
 )
+```
 
+![](PA1_template_files/figure-html/filled_histogram-1.png)<!-- -->
+
+```r
 # Calculate the mean and median of the total number of steps taken per day
 meanTotalSteps   <- mean(totalStepsByDay$totalSteps)
 medianTotalSteps <- median(totalStepsByDay$totalSteps)
 ```
 
-The mean of total steps by day is `r meanTotalSteps`.
+The mean of total steps by day is 1.0765639\times 10^{4}.
 
-The median of total steps by day is `r medianTotalSteps`.
+The median of total steps by day is 10762.
 
 **These values are not so different from the previous ones. NA values were precedently ignored, ans new ones are equals to the mean of sames intervals.**
 
@@ -145,7 +153,8 @@ The median of total steps by day is `r medianTotalSteps`.
 
 ###1. Create a new factor variable in the dataset with two levels -- "weekday" and "weekend" indicating whether a given date is a weekday or weekend day
 
-```{r weekendDetection}
+
+```r
 dfFilled <- dfFilled %>%
    mutate(weekday = 
              if_else(
@@ -154,12 +163,12 @@ dfFilled <- dfFilled %>%
                 "weekend", "weekday"
              )
           )
-
 ```
 
 ###2. Make a panel plot containing a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis)
 
-```{r histogramWeekend}
+
+```r
 # Calculate means of steps by interval across days
 meanStepsByInterval  <- aggregate.data.frame(dfFilled$steps, by=list(interval = dfFilled$interval, weekday = dfFilled$weekday), FUN = "mean")
 meanStepsByInterval  <- rename(meanStepsByInterval, meanSteps = x)
@@ -173,3 +182,5 @@ xyplot(
    main = "Mean steps by interval across days, on weekend and weekdays", 
    xlab = "Interval", ylab = "Mean steps")
 ```
+
+![](PA1_template_files/figure-html/histogramWeekend-1.png)<!-- -->
